@@ -9,36 +9,18 @@ with open("test.csv", 'w') as file:
 	csv_writer.writerow([1])
 '''
 
-class New(tk.Frame):
-	def __init__(self, master):
-		tk.Frame.__init__(self, master)
-
-		'''
-		self.image = Image.open("logo.png")
-		self.image.thumbnail((500,300), Image.ANTIALIAS)
-		self.img = ImageTk.PhotoImage(self.image)
-		self.panel = tk.Label(self, image=self.img)
-		self.panel.grid(row=0, rowspan=4, column=0, sticky="nesw")
-		
-		self.label = tk.Label(self, width=50, text="Total:")
-		self.label.grid(row=0, column=0, sticky="nesw")
-		'''
-
-
 class Main(tk.Frame):
 	def __init__(self, master):
 		tk.Frame.__init__(self, master)
 
 		self.master = master
 		master.title("logger")
-		#self['bg'] = "#3d2d21"
-		'''
 		master.resizable(0, 0)
-		menubar = tk.Menu(master)
-		menubar.add_command(label="Hello!")
-		menubar.add_command(label="Quit!")
-		master.config(menu=menubar)
-		'''
+
+		self.topbar = tk.Menu(master)
+		self.topbar.add_command(label="New Session", command=lambda: self.master.register(self.new()))
+
+		master.config(menu=self.topbar)
 
 		self.image = Image.open("logo.png")
 		self.image.thumbnail((300, 300), Image.ANTIALIAS)
@@ -46,6 +28,7 @@ class Main(tk.Frame):
 		self.panel = tk.Label(self.master, image=self.img)
 		self.panel.grid(row=0, rowspan=4, column=0, sticky="nesw")
 
+		self.session = 0
 		self.total = 0
 
 		self.totalLabel = tk.Label(self.master, text=f"Total:  ${self.total}", font=("Arial", 24), width=20)
@@ -76,22 +59,17 @@ class Main(tk.Frame):
 		#self.latest.grid(row=1, column=1, sticky="nesw")
 
 	def new(self):
-		self.new = New(self.master)
-		self.button.grid_forget()
-		self.button2.grid_forget()
-		self.button3.grid_forget()
-		self.button4.grid_forget()
-		self.new.grid(row=0, rowspan=4, column=1, sticky="nesw")
+
+		self.totalLabel['text'] = f"Session:  ${self.session}"
+
+		self.entry1.config(state="disabled")
+		self.entry2.config(state="disabled")
+		self.entry3.config(state="disabled")
+
+		self.topbar.delete("New Session")
+		self.topbar.add_command(label="End Session", command=lambda: print("ok"))
+
 
 root = tk.Tk()
 main = Main(root)
-
-# create a toplevel menu
-menubar = tk.Menu(root)
-filemenu = tk.Menu(root)
-filemenu.add_command(label="Hello!", command=lambda: print("hello"))
-menubar.add_cascade(label="Quit!", menu=filemenu)
-
-# display the menu
-root.config(menu=menubar)
 root.mainloop()
