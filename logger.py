@@ -2,8 +2,10 @@ import tkinter as tk
 from PIL import ImageTk, Image
 import os, csv
 
+entryValues = []
 with open("save.csv", 'r') as file:
-	entryValues = list(csv.reader(file))[1]
+	for i in list(csv.reader(file))[0]:
+		entryValues.append(int(i))
 
 class Main(tk.Frame):
 	def __init__(self, master):
@@ -43,7 +45,7 @@ class Main(tk.Frame):
 		self.steel.grid(row=3, column=1, pady=(0, 20), sticky="e")
 
 		vcmd = self.master.register(self.validate)
-		self.entry1 = tk.Entry(self.master, width=10, validate="key", vcmd=(vcmd, '%P'))
+		self.entry1 = tk.Entry(self.master, width=10)#, validate="key", vcmd=(vcmd, '%P'))
 		self.entry2 = tk.Entry(self.master, width=10)
 		self.entry3 = tk.Entry(self.master, width=10)
 		
@@ -78,8 +80,12 @@ class Main(tk.Frame):
 		self.totalLabel['text'] = f"Session:  $0"
 
 		for entry in self.entries:
+
 			entry.config(state="normal")
+			entry.delete(0, "end")
+
 			entry.insert(0, 0)
+
 			entry.bind('<FocusOut>', lambda event: self.update("Session"))
 
 		self.topbar.delete("New Session")
@@ -87,14 +93,17 @@ class Main(tk.Frame):
 		self.topbar.add_command(label="Cancel")
 
 	def end(self):
-		self.temp = entryValues
-		self.totalLabel['text'] = f"Total:  ${self.total}"
-
+		self.temp = []
 		for i in range(0, 3):
-			entryValues[i] += self.entries[i].get()
+			self.temp.append(entryValues[i]) 
+			entryValues[i] += int(self.entries[i].get())
+			self.entries[i].delete(0, "end")
 			self.entries[i].insert(0, entryValues[i])
 			self.entries[i].config(state="readonly")
 			self.entries[i].unbind('<FocusOut>')
+
+		entrySum = int(self.entry1.get())*100000 + int(self.entry2.get())*409200 + int(self.entry3.get())*100000000
+		self.totalLabel['text'] = f"Total:  ${'{:,}'.format(entrySum)}"
 
 		self.topbar.delete("End Session")
 		self.topbar.delete("Cancel")
@@ -102,13 +111,23 @@ class Main(tk.Frame):
 
 	def undo(self):
 		if self.temp:
-			entryValues = self.temp
+			for i in range(0, 3):
+				entryValues[i] = self.temp[i]
+				self.entries[i].config(state="normal")
+				self.entries[i].delete(0, "end")
+				self.entries[i].insert(0, self.temp[i])
+				self.entries[i].config(state="readonly")
 		self.update("Total")
+		self.temp = None
 
 	def reset(self):
-		entryValues = [0]*3
+		for i in range(0, 3):
+			entryValues[i] = 0
 		for entry in self.entries:
+			entry.config(state="normal")
+			entry.delete(0, "end")
 			entry.insert(0, 0)
+			entry.config(state="readonly")
 		self.update("Total")
 
 root = tk.Tk()
@@ -117,7 +136,6 @@ root.mainloop()
 
 with open("save.csv", 'w') as file:
 	csv_writer = csv.writer(file)
-	csv_writer.writerow(["neidan", "shell", "steel shell"])
 	csv_writer.writerow(entryValues)
 
 
